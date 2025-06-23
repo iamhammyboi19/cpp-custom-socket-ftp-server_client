@@ -35,21 +35,23 @@ Metrics include:
 #### ⚠️ Known Limitations & Ongoing Research:
 
 1. Each client has its own `kqueue` instance.
-   _ Centralizing client FDs into one `kqueue` caused cross-thread fd handling issues.
-   _ Thread A socket fd might be the one to handle notification of Thread B socket fd causing wrong socket close and clean up.
-   \_ Ongoing research: using a unified `kqueue` in the main thread and distributing work via a task queue.
+
+   - Centralizing client FDs into one `kqueue` caused cross-thread fd handling issues.
+   - Thread A socket fd might be the one to handle notification of Thread B socket fd causing wrong socket close and clean up.
+   - Ongoing research: using a unified `kqueue` in the main thread and distributing work via a task queue.
 
 2. Each client thread opens its own file.
-   _ This contributes to file descriptor exhaustion.
-   _ Planned solution: use `mmap()` to memory-map the file once and share across threads.
+
+   - This contributes to file descriptor exhaustion.
+   - Planned solution: use `mmap()` to memory-map the file once and share across threads.
 
 3. Server-side thread pool only allows one thread per client.
-   _ Prevents race conditions, but reduces parallelism when reading from one client.
-   _ This means if Thread A reads first from the socket and Thread B reads from it after Thread A.
-   _ Thread B might acquire the mutex lock before Thread A leading to race condition writes.
-   _ So I am currently making research to improve this because in the test.
-   _ Benchmark: 1-thread client + no thread pool is 0.011s faster than with a pool of 8.
-   _ However, with many clients, the 8-thread server is 1.4–1.8x faster.
+   - Prevents race conditions, but reduces parallelism when reading from one client.
+   - This means if Thread A reads first from the socket and Thread B reads from it after Thread A.
+   - Thread B might acquire the mutex lock before Thread A leading to race condition writes.
+   - So I am currently making research to improve this because in the test.
+   - Benchmark: 1-thread client + no thread pool is 0.011s faster than with a pool of 8.
+   - However, with many clients, the 8-thread server is 1.4–1.8x faster.
 
 #### 🧪 Future Improvements:
 
