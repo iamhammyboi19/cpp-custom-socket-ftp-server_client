@@ -1,0 +1,5 @@
+testing
+logs.txt
+*.DS_Store
+test_results.txt
+.vscode
